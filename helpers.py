@@ -1,0 +1,65 @@
+import allure
+import requests
+import random
+import string
+
+BASE_URL = 'https://qa-scooter.praktikum-services.ru/api/v1'
+
+
+def login_courier(login, password):
+    allure.step("логиним курьера")
+    return requests.post(
+        f'{BASE_URL}/courier/login',
+        data={"login": login, "password": password}
+    )
+
+
+def delete_courier(login, password):
+    allure.step("удаляем курьера")
+    response = login_courier(login, password)
+    courier_id = response.json().get("id")
+    if courier_id:
+        requests.delete(f'{BASE_URL}/courier/{courier_id}')
+
+
+def create_order(color=None):
+    allure.step("создаем заказ")
+    payload = {
+        "firstName": "Naruto",
+        "lastName": "Uchiha",
+        "address": "Konoha, 142 apt.",
+        "metroStation": 4,
+        "phone": "+7 800 355 35 35",
+        "rentTime": 5,
+        "deliveryDate": "2025-06-30",
+        "comment": "Saske, come back to Konoha"
+    }
+
+    if color:
+        payload["color"] = [color] if isinstance(color, str) else color
+
+    return requests.post(f'{BASE_URL}/orders', json=payload)
+
+
+def generate_random_string(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for _ in range(length))
+
+
+def register_new_courier_and_return_login_password():
+    allure.step("регистрируем нового курьера")
+    login = generate_random_string(10)
+    password = generate_random_string(10)
+    first_name = generate_random_string(10)
+
+    payload = {
+        "login": login,
+        "password": password,
+        "firstName": first_name
+    }
+
+    response = requests.post(f'{BASE_URL}/courier', data=payload)
+
+    if response.status_code == 201:
+        return [login, password, first_name]
+    return None
