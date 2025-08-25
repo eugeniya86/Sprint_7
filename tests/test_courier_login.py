@@ -1,6 +1,7 @@
 import pytest
 import allure
-from helpers import login_courier
+import data
+from helpers import login_courier, delete_courier
 from conftest import setup_courier
 
 
@@ -11,6 +12,7 @@ class TestCourierLogin:
         response = login_courier(login, password)
         assert response.status_code == 200
         assert "id" in response.json()
+        delete_courier(login, password)
 
     @allure.title('Авторизация с отсутствующими учетными данными')
     @pytest.mark.parametrize("login,password", [
@@ -26,7 +28,7 @@ class TestCourierLogin:
         response = login_courier(actual_login, actual_password)
 
         assert response.status_code == 400
-        assert response.json()["message"] == "Недостаточно данных для входа"
+        assert response.json()["message"] == data.missing_credentials
 
     @allure.title('Авторизация с неверными учетными данными')
     @pytest.mark.parametrize("login,password", [
@@ -42,10 +44,10 @@ class TestCourierLogin:
         response = login_courier(actual_login, actual_password)
 
         assert response.status_code == 404
-        assert response.json()["message"] == "Учетная запись не найдена"
+        assert response.json()["message"] == data.login_not_found
 
     @allure.title('Авторизация несуществующего пользователя')
     def test_courier_login_nonexistent_user(self):
         response = login_courier("nonexistent_user", "password123")
         assert response.status_code == 404
-        assert response.json()["message"] == "Учетная запись не найдена"
+        assert response.json()["message"] == data.login_not_found

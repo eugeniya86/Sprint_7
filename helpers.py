@@ -1,3 +1,4 @@
+import allure
 import requests
 import random
 import string
@@ -6,13 +7,23 @@ BASE_URL = 'https://qa-scooter.praktikum-services.ru/api/v1'
 
 
 def login_courier(login, password):
+    allure.step("логиним курьера")
     return requests.post(
         f'{BASE_URL}/courier/login',
         data={"login": login, "password": password}
     )
 
 
+def delete_courier(login, password):
+    allure.step("удаляем курьера")
+    response = login_courier(login, password)
+    courier_id = response.json().get("id")
+    if courier_id:
+        requests.delete(f'{BASE_URL}/courier/{courier_id}')
+
+
 def create_order(color=None):
+    allure.step("создаем заказ")
     payload = {
         "firstName": "Naruto",
         "lastName": "Uchiha",
@@ -36,7 +47,7 @@ def generate_random_string(length):
 
 
 def register_new_courier_and_return_login_password():
-
+    allure.step("регистрируем нового курьера")
     login = generate_random_string(10)
     password = generate_random_string(10)
     first_name = generate_random_string(10)

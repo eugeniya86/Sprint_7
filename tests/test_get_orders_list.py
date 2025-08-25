@@ -12,3 +12,4 @@ class TestGetOrdersList:
         response_data = response.json()
         assert "orders" in response_data
         assert isinstance(response_data["orders"], list)
+        
